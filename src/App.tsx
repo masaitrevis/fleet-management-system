@@ -10,15 +10,15 @@ import { stub } from '@/pages/stubs';
 import TrackingPage from '@/pages/tracking/TrackingPage';
 import GeofencesPage from '@/pages/tracking/GeofencesPage';
 import TripsPage from '@/pages/tracking/TripsPage';
+import Drivers from '@/pages/drivers/Drivers';
+import DriverDetail from '@/pages/drivers/DriverDetail';
+import Safety from '@/pages/drivers/Safety';
+import Rewards from '@/pages/drivers/Rewards';
+import Dvir from '@/pages/drivers/Dvir';
+import Shifts from '@/pages/drivers/Shifts';
 import { startSim } from '@/lib/sim';
 
 // Route stubs — replaced by page agents (design.md §11).
-const Drivers = stub('Drivers');
-const DriverDetail = stub('Driver 360°');
-const Safety = stub('Safety Events & Coaching');
-const Rewards = stub('Driver Rewards');
-const Dvir = stub('Vehicle Inspection (DVIR)', 'Mobile-first pre/post-trip checklist — page agent implements per dvir.md.');
-const Shifts = stub('Shifts & Driving Hours');
 const Documents = stub('Document Vault');
 const Maintenance = stub('Work Orders');
 const MaintSchedules = stub('Preventive Schedules');
