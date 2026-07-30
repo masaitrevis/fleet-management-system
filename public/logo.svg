@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <rect width="128" height="128" rx="28" fill="#0A1A2F"/>
+  <!-- route arc -->
+  <path d="M22 96 C40 96 40 62 64 62 C88 62 88 32 106 32" fill="none" stroke="#06B6D4" stroke-width="7" stroke-linecap="round" opacity="0.45"/>
+  <!-- location pin -->
+  <path d="M64 24 C47.5 24 34 37.5 34 54 C34 76.5 64 104 64 104 C64 104 94 76.5 94 54 C94 37.5 80.5 24 64 24 Z" fill="#06B6D4"/>
+  <circle cx="64" cy="54" r="15" fill="#0A1A2F"/>
+  <!-- speedometer needle -->
+  <path d="M64 54 L76 42" stroke="#06B6D4" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="64" cy="54" r="5" fill="#06B6D4"/>
+  <!-- end node -->
+  <circle cx="106" cy="32" r="6" fill="#22D3EE"/>
+</svg>

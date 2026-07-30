@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 360" width="480" height="360">
+  <g fill="none" stroke="#C9D9EA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <!-- dashed route -->
+    <path d="M96 300 C160 300 170 220 240 210 C310 200 330 130 396 96" stroke-dasharray="10 9"/>
+    <!-- map pin -->
+    <path d="M96 214 C70 214 50 235 50 261 C50 296 96 334 96 334 C96 334 142 296 142 261 C142 235 122 214 96 214 Z"/>
+    <circle cx="96" cy="261" r="16"/>
+    <!-- ground contour hints -->
+    <path d="M180 320 C230 306 290 326 340 312" stroke-width="1.5" stroke-dasharray="4 7" opacity="0.7"/>
+    <path d="M300 260 C340 250 380 262 420 250" stroke-width="1.5" stroke-dasharray="4 7" opacity="0.7"/>
+    <!-- small crosshair marks -->
+    <path d="M210 96 v16 M202 104 h16" stroke-width="1.5" opacity="0.8"/>
+    <path d="M60 120 v14 M53 127 h14" stroke-width="1.5" opacity="0.8"/>
+  </g>
+  <!-- cyan accent node at route end -->
+  <circle cx="396" cy="96" r="7" fill="#06B6D4"/>
+  <circle cx="396" cy="96" r="13" fill="none" stroke="#06B6D4" stroke-width="2" stroke-opacity="0.4"/>
+</svg>
