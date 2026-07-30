@@ -19,6 +19,8 @@ const TABS = [
 
 export default function DriverShell() {
   const { user, isLoading } = useAuth({ redirectOnUnauthenticated: true });
+  const running = useLiveStore((s) => s.running);
+  const location = useLocation();
   useEffect(() => { if (user) syncStore(); }, [user]);
   if (isLoading || !user) {
     return (
@@ -27,8 +29,6 @@ export default function DriverShell() {
       </div>
     );
   }
-  const running = useLiveStore((s) => s.running);
-  const location = useLocation();
   return (
     <div className="flex h-[100dvh] flex-col bg-surface-muted">
       {/* slim navy top bar */}
