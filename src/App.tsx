@@ -16,15 +16,15 @@ import Safety from '@/pages/drivers/Safety';
 import Rewards from '@/pages/drivers/Rewards';
 import Dvir from '@/pages/drivers/Dvir';
 import Shifts from '@/pages/drivers/Shifts';
+import Documents from '@/pages/fleet/Documents';
+import Maintenance from '@/pages/fleet/Maintenance';
+import MaintSchedules from '@/pages/fleet/Schedules';
+import MaintParts from '@/pages/fleet/Parts';
+import Vehicles from '@/pages/fleet/Vehicles';
+import VehicleDetail from '@/pages/fleet/VehicleDetail';
 import { startSim } from '@/lib/sim';
 
 // Route stubs — replaced by page agents (design.md §11).
-const Documents = stub('Document Vault');
-const Maintenance = stub('Work Orders');
-const MaintSchedules = stub('Preventive Schedules');
-const MaintParts = stub('Parts & Vendors');
-const Vehicles = stub('Vehicles');
-const VehicleDetail = stub('Vehicle 360°');
 const Fuel = stub('Fuel Management');
 const FuelAnalytics = stub('Fuel Analytics');
 const Dispatch = stub('Dispatch Board');
