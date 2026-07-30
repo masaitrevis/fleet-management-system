@@ -37,14 +37,22 @@ async function exchangeAuthCode(
   return resp.json() as Promise<TokenResponse>;
 }
 
-const jwks = jose.createRemoteJWKSet(
-  new URL(`${env.kimiAuthUrl}/api/.well-known/jwks.json`),
-);
+// Lazy: building the JWKS URL at import time would crash self-hosted
+// deployments that have no KIMI_AUTH_URL (they never use Kimi OAuth).
+let _jwks: ReturnType<typeof jose.createRemoteJWKSet> | undefined;
+function jwks() {
+  if (!_jwks) {
+    _jwks = jose.createRemoteJWKSet(
+      new URL(`${env.kimiAuthUrl}/api/.well-known/jwks.json`),
+    );
+  }
+  return _jwks;
+}
 
 async function verifyAccessToken(
   accessToken: string,
 ): Promise<{ userId: string; clientId: string }> {
-  const { payload } = await jose.jwtVerify(accessToken, jwks);
+  const { payload } = await jose.jwtVerify(accessToken, jwks());
   const userId = payload.user_id as string;
   const clientId = payload.client_id as string;
   if (!userId) {

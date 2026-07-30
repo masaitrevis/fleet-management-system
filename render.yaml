@@ -20,19 +20,23 @@ services:
       # ── Secrets: Render prompts for these in the dashboard (sync: false) ──
       - key: DATABASE_URL      # mysql://user:pass@host:4000/fbv_fleet (own DB, not the tender one!)
         sync: false
-      - key: APP_ID            # Kimi OAuth app id
+      # ── Kimi OAuth vars: OPTIONAL for self-hosted. Kimi OAuth only works on
+      # Kimi-hosted domains — on onrender.com leave ALL of these blank and use
+      # the ADMIN_* login below instead. If left blank, the app boots fine and
+      # the login page simply hides the "Sign in with Kimi" button.
+      - key: APP_ID            # (optional) Kimi OAuth app id
         sync: false
-      - key: APP_SECRET        # Kimi OAuth app secret (JWT signing)
+      - key: APP_SECRET        # (optional) JWT signing secret; auto-derived if unset
         sync: false
-      - key: KIMI_AUTH_URL     # Kimi OAuth server URL (backend)
+      - key: KIMI_AUTH_URL     # (optional) Kimi OAuth server URL (backend)
         sync: false
-      - key: KIMI_OPEN_URL     # Kimi Open Platform URL
+      - key: KIMI_OPEN_URL     # (optional) Kimi Open Platform URL
         sync: false
-      - key: VITE_KIMI_AUTH_URL  # same auth URL, baked into the frontend build
+      - key: VITE_KIMI_AUTH_URL  # (optional) same auth URL, baked into frontend build
         sync: false
-      - key: VITE_APP_ID         # same app id, baked into the frontend build
+      - key: VITE_APP_ID         # (optional) same app id, baked into frontend build
         sync: false
-      - key: OWNER_UNION_ID      # optional: union id that becomes admin
+      - key: OWNER_UNION_ID      # (optional) union id that becomes admin
         sync: false
       # ── Standalone login (self-hosted) ──
       # Set BOTH to enable the username/password admin login on /login.

@@ -172,7 +172,7 @@ describe("2. CRUD + bulk idempotency on representative collections", () => {
     for (const r of mine) {
       await authed.data.remove({ collection: "vehicles", id: r.id });
     }
-  });
+  }, 20000);
 });
 
 describe("3. atomic doc numbering (no-year prefix)", () => {

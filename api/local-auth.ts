@@ -55,7 +55,9 @@ export function localLoginEnabled(): boolean {
 }
 
 export async function authModesHandler(c: Context) {
-  return c.json({ kimi: true, local: localLoginEnabled() });
+  // Kimi OAuth is only offered when the platform app credentials exist —
+  // self-hosted deployments (no APP_ID) get the local login form alone.
+  return c.json({ kimi: Boolean(env.appId), local: localLoginEnabled() });
 }
 
 async function ensureEnvAdmin(): Promise<void> {
@@ -137,7 +139,9 @@ export async function localLoginHandler(c: Context) {
 
   const token = await signSessionToken({
     unionId: user.unionId,
-    clientId: env.appId,
+    // clientId must be non-empty (session verification requires it); on
+    // self-hosted deployments without APP_ID use a fixed marker.
+    clientId: env.appId || "local",
   });
   setCookie(c, Session.cookieName, token, {
     ...getSessionCookieOptions(c.req.raw.headers),
