@@ -6,7 +6,7 @@ import { ToastStack } from '@/components/shared';
 import Dashboard from '@/pages/Dashboard';
 import Login from '@/pages/Login';
 import NotFound from '@/pages/NotFound';
-import { stub } from '@/pages/stubs';
+import DriverHome from '@/pages/driver/DriverHome';
 import TrackingPage from '@/pages/tracking/TrackingPage';
 import GeofencesPage from '@/pages/tracking/GeofencesPage';
 import TripsPage from '@/pages/tracking/TripsPage';
@@ -36,9 +36,6 @@ import DispatchBoardPage from '@/pages/ops/DispatchBoardPage';
 import JobDetailPage from '@/pages/ops/JobDetailPage';
 import JobRunPage from '@/pages/ops/JobRunPage';
 import AssetsPage from '@/pages/ops/AssetsPage';
-
-// Route stubs — replaced by page agents (design.md §11).
-const DriverHome = stub('Driver Home', 'Mobile driver home — today’s jobs, DVIR prompt, shift status.');
 
 export default function App() {
   useEffect(() => {
