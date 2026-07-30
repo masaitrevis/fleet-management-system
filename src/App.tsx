@@ -8,6 +8,12 @@ import Login from '@/pages/Login';
 import NotFound from '@/pages/NotFound';
 import { stub } from '@/pages/stubs';
 import { startSim } from '@/lib/sim';
+import FuelLogPage from '@/pages/ops/FuelLogPage';
+import FuelAnalyticsPage from '@/pages/ops/FuelAnalyticsPage';
+import DispatchBoardPage from '@/pages/ops/DispatchBoardPage';
+import JobDetailPage from '@/pages/ops/JobDetailPage';
+import JobRunPage from '@/pages/ops/JobRunPage';
+import AssetsPage from '@/pages/ops/AssetsPage';
 
 // Route stubs — replaced by page agents (design.md §11).
 const Tracking = stub('Live Tracking & Route Replay');
@@ -24,13 +30,7 @@ const MaintSchedules = stub('Preventive Schedules');
 const MaintParts = stub('Parts & Vendors');
 const Vehicles = stub('Vehicles');
 const VehicleDetail = stub('Vehicle 360°');
-const Fuel = stub('Fuel Management');
-const FuelAnalytics = stub('Fuel Analytics');
 const Trips = stub('Trips');
-const Dispatch = stub('Dispatch Board');
-const DispatchDetail = stub('Job Detail');
-const DispatchRun = stub('Job Run & POD', 'Driver mobile run view with proof of delivery — page agent implements per dispatch.md.');
-const Assets = stub('Assets & Equipment');
 const Alerts = stub('Alert Center');
 const Reports = stub('Reports');
 const Analytics = stub('Executive Analytics');
@@ -66,12 +66,12 @@ export default function App() {
           <Route path="maintenance/parts" element={<MaintParts />} />
           <Route path="vehicles" element={<Vehicles />} />
           <Route path="vehicles/:id" element={<VehicleDetail />} />
-          <Route path="fuel" element={<Fuel />} />
-          <Route path="fuel/analytics" element={<FuelAnalytics />} />
+          <Route path="fuel" element={<FuelLogPage />} />
+          <Route path="fuel/analytics" element={<FuelAnalyticsPage />} />
           <Route path="trips" element={<Trips />} />
-          <Route path="dispatch" element={<Dispatch />} />
-          <Route path="dispatch/:id" element={<DispatchDetail />} />
-          <Route path="assets" element={<Assets />} />
+          <Route path="dispatch" element={<DispatchBoardPage />} />
+          <Route path="dispatch/:id" element={<JobDetailPage />} />
+          <Route path="assets" element={<AssetsPage />} />
           <Route path="alerts" element={<Alerts />} />
           <Route path="reports" element={<Reports />} />
           <Route path="analytics" element={<Analytics />} />
@@ -86,7 +86,7 @@ export default function App() {
           <Route path="driver" element={<DriverHome />} />
           <Route path="dvir" element={<Dvir />} />
           <Route path="shifts" element={<Shifts />} />
-          <Route path="dispatch/:id/run" element={<DispatchRun />} />
+          <Route path="dispatch/:id/run" element={<JobRunPage />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />
