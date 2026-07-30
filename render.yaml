@@ -45,3 +45,16 @@ services:
         sync: false
       - key: ADMIN_PASSWORD      # choose a strong password
         sync: false
+      # ── Traccar real-GPS integration (all OPTIONAL) ──
+      # Point at your Traccar server to track real devices; vehicles are
+      # linked by their GPS device IMEI (Vehicles → Add vehicle). Without
+      # TRACCAR_URL everything stays simulated. Auth: EITHER a Bearer token
+      # (Traccar user → Preferences → token) OR user+password (Basic).
+      - key: TRACCAR_URL         # (optional) e.g. http://135.181.x.x:8082
+        sync: false
+      - key: TRACCAR_TOKEN       # (optional) Bearer token — preferred
+        sync: false
+      - key: TRACCAR_USER        # (optional) Basic-auth user (if no token)
+        sync: false
+      - key: TRACCAR_PASS        # (optional) Basic-auth password (if no token)
+        sync: false

@@ -312,7 +312,7 @@ export class FleetSimulator implements TelematicsProvider {
         vehicleId: id, lat: s.lat, lng: s.lng,
         speedKmh: Math.round(s.speedKmh), heading: Math.round(s.heading),
         ignition: s.mode !== 'offline' && s.mode !== 'dwell',
-        status, at: now,
+        status, at: now, source: 'sim',
       });
     });
     return m;

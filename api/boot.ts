@@ -7,6 +7,7 @@ import { createContext } from "./context";
 import { env } from "./lib/env";
 import { createOAuthCallbackHandler } from "./kimi/auth";
 import { authModesHandler, localLoginHandler } from "./local-auth";
+import { bootTelematics } from "./telematics";
 import { Paths } from "@contracts/constants";
 
 const app = new Hono<{ Bindings: HttpBindings }>();
@@ -24,6 +25,9 @@ app.use("/api/trpc/*", async (c) => {
   });
 });
 app.all("/api/*", (c) => c.json({ error: "Not Found" }, 404));
+
+// Start the Traccar poller when configured — never blocks or crashes boot.
+bootTelematics();
 
 export default app;
 

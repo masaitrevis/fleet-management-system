@@ -48,4 +48,22 @@ export const env = {
   get adminPassword() {
     return process.env.ADMIN_PASSWORD ?? "";
   },
+  // ── Traccar real-GPS integration (all optional — lazy so tests can set
+  // them at runtime and boot never fails when absent) ──
+  get traccarUrl() {
+    return (process.env.TRACCAR_URL ?? "").replace(/\/+$/, "");
+  },
+  get traccarToken() {
+    return process.env.TRACCAR_TOKEN ?? "";
+  },
+  get traccarUser() {
+    return process.env.TRACCAR_USER ?? "";
+  },
+  get traccarPass() {
+    return process.env.TRACCAR_PASS ?? "";
+  },
+  get traccarPollMs() {
+    const n = Number(process.env.TRACCAR_POLL_MS);
+    return Number.isFinite(n) && n >= 1000 ? n : 10000;
+  },
 };

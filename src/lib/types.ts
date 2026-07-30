@@ -30,6 +30,9 @@ export interface Vehicle {
   homeLng: number;
   lastServiceKm: number;
   createdAt: string;             // ISO
+  /** GPS tracker IMEI (15 digits) — links the vehicle to a real Traccar device.
+      Absent/empty = vehicle is driven by the built-in simulator. */
+  deviceImei?: string;
 }
 
 export interface Driver {
@@ -353,4 +356,6 @@ export interface LivePosition {
   ignition: boolean;
   status: VehicleStatus;
   at: number;                    // epoch ms
+  /** Where this fix came from — real GPS via Traccar or the built-in simulator. */
+  source?: 'sim' | 'traccar';
 }

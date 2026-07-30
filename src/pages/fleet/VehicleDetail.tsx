@@ -15,6 +15,7 @@ import {
   ConfirmDialog, DataTable, DonutChartCard, EmptyState, LineChartCard, Modal,
   PlateTag, ScoreRing, Sparkline, StatusPill, Tabs, toast, BarChartCard,
 } from '@/components/shared';
+import { SourceBadge } from '@/components/SourceBadge';
 import type { Column } from '@/components/shared';
 import {
   getById, update, useCollection, useLivePositions,
@@ -232,6 +233,7 @@ export default function VehicleDetail() {
             <div className="flex items-center gap-3">
               <PlateTag plate={v.plate} className="px-2.5 py-1 text-[20px]" />
               <StatusPill status={pill.key} label={pill.label} pulse={pill.label === 'MOVING'} />
+              <SourceBadge source={livePos?.source} />
               {livePos && (
                 <span className={cn('flex items-center gap-1 text-micro font-semibold', livePos.ignition ? 'text-ok-on-soft' : 'text-ink-400')}>
                   <KeyRound size={12} /> {livePos.ignition ? 'IGN ON' : 'IGN OFF'}
@@ -241,7 +243,12 @@ export default function VehicleDetail() {
             <div className="mt-1.5 text-[14px] font-semibold text-ink-900">
               {v.model} · {v.year} · {v.fuelType === 'diesel' ? 'Diesel' : 'Petrol'}
             </div>
-            <div className="text-micro text-ink-400">{v.depot}{driver ? ` · ${driver.name}` : ' · Unassigned'}</div>
+            <div className="text-micro text-ink-400">
+              {v.depot}{driver ? ` · ${driver.name}` : ' · Unassigned'}
+              {v.deviceImei && (
+                <span className="ml-2 font-mono text-ink-600">IMEI {v.deviceImei}</span>
+              )}
+            </div>
           </div>
         </div>
         <div className="flex flex-col items-center gap-1">

@@ -187,6 +187,7 @@ function VehicleCard({ v, live, geofences, drivers, health, index, onAssign }: {
 /* ---------------- add vehicle modal ---------------- */
 
 const PLATE_RE = /^K[A-Z]{2} \d{3}[A-Z]$/;
+const IMEI_RE = /^\d{15}$/;
 
 function AddVehicleModal({ open, onClose, drivers }: { open: boolean; onClose: () => void; drivers: Driver[] }) {
   const [step, setStep] = useState(1);
@@ -201,20 +202,23 @@ function AddVehicleModal({ open, onClose, drivers }: { open: boolean; onClose: (
   const [costDate, setCostDate] = useState('2026-07-28');
   const [odo, setOdo] = useState('0');
   const [driverId, setDriverId] = useState('');
+  const [imei, setImei] = useState('');
   const [saving, setSaving] = useState(false);
 
   const plateOk = PLATE_RE.test(plate);
+  const imeiOk = imei === '' || IMEI_RE.test(imei);
   const step1Ok = plateOk && make.trim() && model.trim() && Number(year) >= 1990;
 
   const reset = () => {
     setStep(1); setPlate(''); setType('truck'); setMake(''); setModel(''); setYear('2024');
     setColor(''); setTank('100'); setCost(''); setCostDate('2026-07-28'); setOdo('0'); setDriverId('');
+    setImei('');
   };
 
   const save = async () => {
     setSaving(true);
     const seq = await nextSequence('vehicle');
-    const simId = `SIM-KE-${seq.slice(-3)}`;
+    const deviceLabel = imei ? `IMEI ${imei}` : `SIM-KE-${seq.slice(-3)}`;
     const rec = add('vehicles', {
       id: `veh-${seq.slice(-3)}`,
       plate, type, make: make.trim(), model: `${make.trim()} ${model.trim()}`, year: Number(year),
@@ -227,9 +231,10 @@ function AddVehicleModal({ open, onClose, drivers }: { open: boolean; onClose: (
       simRoute: 'city-industrial', homeLat: -1.3031, homeLng: 36.8526,
       lastServiceKm: Number(odo) || 0,
       createdAt: costDate,
+      ...(imei ? { deviceImei: imei } : {}),
     });
-    auditLog('create', 'vehicles', rec.id, `Registered vehicle ${plate} (${make} ${model}, device ${simId})`);
-    toast({ title: 'Vehicle added', body: `${plate} registered · telematics ${simId}`, status: 'ok' });
+    auditLog('create', 'vehicles', rec.id, `Registered vehicle ${plate} (${make} ${model}, device ${deviceLabel})`);
+    toast({ title: 'Vehicle added', body: `${plate} registered · telematics ${deviceLabel}`, status: 'ok' });
     setSaving(false);
     onClose();
     reset();
@@ -262,7 +267,7 @@ function AddVehicleModal({ open, onClose, drivers }: { open: boolean; onClose: (
             <button type="button" disabled={!step1Ok} onClick={() => setStep(2)}
               className="h-9 rounded-lg bg-accent px-4 text-[13px] font-semibold text-navy-950 hover:bg-accent-strong disabled:opacity-40">Continue</button>
           ) : (
-            <button type="button" disabled={saving} onClick={save}
+            <button type="button" disabled={saving || !imeiOk} onClick={save}
               className="h-9 rounded-lg bg-accent px-4 text-[13px] font-semibold text-navy-950 hover:bg-accent-strong disabled:opacity-40">
               {saving ? 'Saving…' : 'Save vehicle'}
             </button>
@@ -318,10 +323,14 @@ function AddVehicleModal({ open, onClose, drivers }: { open: boolean; onClose: (
               <option value="">— unassigned —</option>
               {drivers.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select></label>
-          <div className="flex flex-col gap-1">
-            <span className={label}>Telematics device</span>
-            <div className="flex h-9 items-center rounded-lg bg-surface-muted px-3 font-mono text-[13px] text-ink-600">SIM-KE-0xx · auto on save</div>
-          </div>
+          <label className="flex flex-col gap-1"><span className={label}>GPS device IMEI (optional)</span>
+            <input value={imei} onChange={(e) => setImei(e.target.value.replace(/\D/g, '').slice(0, 15))}
+              placeholder="861234567890123" inputMode="numeric"
+              className={cn(input, 'font-mono tracking-[0.04em]', imei && !imeiOk && 'border-alert')} />
+            {imei && !imeiOk
+              ? <span className="text-micro font-medium text-alert-on-soft">IMEI must be exactly 15 digits ({imei.length}/15)</span>
+              : <span className="text-micro text-ink-400">From the tracker installed in the vehicle — leave empty to keep this vehicle simulated</span>}
+          </label>
           <p className="col-span-2 rounded-lg bg-accent-soft/50 px-3 py-2 text-[12px] text-ink-600">
             Purchase cost & date feed the TCO model (8-year straight-line depreciation) on the vehicle 360° page.
           </p>

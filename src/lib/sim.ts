@@ -6,6 +6,7 @@ import { FleetSimulator, corridorById } from './telematics';
 import type { TelematicsEvent } from './telematics';
 import { SIM_CONFIGS } from './seed';
 import { useLiveStore, add } from './store';
+import { mergeTraccarPositions, startTraccarSync, stopTraccarSync } from './traccar';
 import type { SafetyEventType } from './types';
 
 export const sim: FleetSimulator = new FleetSimulator(SIM_CONFIGS);
@@ -18,7 +19,8 @@ export function startSim(): void {
     wired = true;
     sim.subscribe((positions) => {
       useLiveStore.setState((s) => ({
-        positions,
+        // Real Traccar fixes win over sim positions for mapped vehicles.
+        positions: mergeTraccarPositions(positions),
         running: sim.isRunning(),
         trailsVersion: s.trailsVersion + 1,
       }));
@@ -26,11 +28,13 @@ export function startSim(): void {
     sim.onEvent?.(handleSimEvent);
   }
   sim.start();
+  startTraccarSync();
   useLiveStore.setState({ running: true });
 }
 
 export function stopSim(): void {
   sim.stop();
+  stopTraccarSync();
   useLiveStore.setState({ running: false });
 }
 

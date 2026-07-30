@@ -1,17 +1,19 @@
 // /settings — Company Profile, Numbering, Backup & Danger Zone (design/settings.md)
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import {
   Building2, Check, DatabaseBackup, Download, FileDigit, Loader2, Lock,
-  Bell, Pause, Play, RotateCcw, Settings2, ShieldCheck, TriangleAlert,
-  Upload,
+  Bell, Pause, Play, RotateCcw, Satellite, Settings2, ShieldCheck,
+  TriangleAlert, Upload,
 } from 'lucide-react';
 import { ConfirmDialog, Modal, toast } from '@/components/shared';
 import {
   clearAllData, exportJSON, importJSON, kvGet, kvSet, resetToSeed,
   useCollection, useFleetStore, useKV, useLiveStore,
 } from '@/lib/store';
+import { api } from '@/lib/api';
 import { startSim, stopSim } from '@/lib/sim';
 import type { AlertType } from '@/lib/types';
 import { fmtDateTimeEAT, fmtNum } from '@/lib/format';
@@ -29,6 +31,7 @@ const SECTIONS = [
   { id: 'preferences', label: 'Preferences', icon: Settings2 },
   { id: 'numbering', label: 'Document numbering', icon: FileDigit },
   { id: 'notifications', label: 'Notifications', icon: Bell },
+  { id: 'telematics', label: 'Telematics', icon: Satellite },
   { id: 'backup', label: 'Data & backup', icon: DatabaseBackup },
   { id: 'danger', label: 'Danger zone', icon: TriangleAlert },
 ] as const;
@@ -44,6 +47,87 @@ const ALERT_TYPES: { key: AlertType; label: string }[] = [
   { key: 'device_offline', label: 'Device offline' },
   { key: 'shift_violation', label: 'Shift violation' },
 ];
+
+/* ---------------- telematics (Traccar real GPS) ---------------- */
+
+type TelematicsStatus = Awaited<ReturnType<typeof api.telematics.status.query>>;
+
+function TelematicsCard() {
+  const [status, setStatus] = useState<TelematicsStatus | null>(null);
+  const [unreachable, setUnreachable] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    const load = async () => {
+      try {
+        const s = await api.telematics.status.query();
+        if (alive) { setStatus(s); setUnreachable(false); }
+      } catch {
+        if (alive) setUnreachable(true);
+      }
+    };
+    void load();
+    const t = setInterval(() => void load(), 10000);
+    return () => { alive = false; clearInterval(t); };
+  }, []);
+
+  const rows: { label: string; value: ReactNode; mono?: boolean }[] = status ? [
+    { label: 'Last poll', value: status.lastPollAt ? fmtDateTimeEAT(status.lastPollAt, true) : '—', mono: true },
+    { label: 'Devices on Traccar', value: status.deviceCount, mono: true },
+    { label: 'Mapped to vehicles', value: status.mappedCount, mono: true },
+    { label: 'Poll interval', value: `${(status.pollMs / 1000).toFixed(0)}s`, mono: true },
+  ] : [];
+
+  return (
+    <Card className="flex flex-col gap-4 p-5">
+      <div className="flex items-center justify-between gap-3">
+        <SectionTitle>Telematics — real GPS (Traccar)</SectionTitle>
+        {status && (
+          <Chip tone={!status.configured ? 'inactive' : status.connected ? 'ok' : 'warn'} className="font-mono">
+            <span className={cn('h-1.5 w-1.5 rounded-full',
+              !status.configured ? 'bg-inactive' : status.connected ? 'bg-ok animate-pulse' : 'bg-warn')} />
+            {!status.configured ? 'NOT CONFIGURED' : status.connected ? 'CONNECTED' : 'DISCONNECTED'}
+          </Chip>
+        )}
+      </div>
+
+      {unreachable && !status && (
+        <p className="rounded-lg bg-warn-soft px-3 py-2 text-[12px] font-medium text-warn-on-soft">
+          Telematics status unavailable — the API is unreachable or you are signed out. Retrying every 10s.
+        </p>
+      )}
+
+      {status && !status.configured && (
+        <p className="rounded-lg bg-accent-soft/50 px-3 py-2 text-[12px] text-ink-600">
+          Set <span className="font-mono font-semibold">TRACCAR_URL</span> + <span className="font-mono font-semibold">TRACCAR_TOKEN</span> on
+          the server to connect real GPS trackers. Vehicles without a device IMEI stay simulated.
+        </p>
+      )}
+
+      {status?.configured && (
+        <div className="grid grid-cols-2 gap-x-8 gap-y-2 sm:grid-cols-4">
+          {rows.map((r) => (
+            <div key={r.label}>
+              <div className="text-micro uppercase tracking-[0.06em] text-ink-400">{r.label}</div>
+              <div className={cn('text-[13px] font-semibold text-ink-900', r.mono && 'font-mono')}>{r.value}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {status?.configured && status.lastError && (
+        <p className="rounded-lg bg-warn-soft px-3 py-2 font-mono text-[12px] font-medium text-warn-on-soft">
+          Last error: {status.lastError}
+        </p>
+      )}
+
+      <p className="text-micro text-ink-400">
+        Link a tracker to a vehicle via its GPS device IMEI in Vehicles → Add vehicle. Real fixes replace
+        simulated positions for mapped vehicles; everything else keeps simulating.
+      </p>
+    </Card>
+  );
+}
 
 const SEQ_META = [
   { kind: 'wo' as const, entity: 'Work order', prefix: 'FBV-WO-' },
@@ -479,7 +563,14 @@ export default function SettingsPage() {
             </motion.div>
           </section>
 
-          {/* 5. data & backup */}
+          {/* 5. telematics */}
+          <section id="telematics" ref={(el) => { sectionRefs.current.telematics = el; }}>
+            <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.3, ease: EASE }}>
+              <TelematicsCard />
+            </motion.div>
+          </section>
+
+          {/* 6. data & backup */}
           <section id="backup" ref={(el) => { sectionRefs.current.backup = el; }}>
             <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.3, ease: EASE }}>
               <div className="overflow-hidden rounded-card bg-navy-900 p-5 text-white shadow-card">
@@ -513,7 +604,7 @@ export default function SettingsPage() {
             </motion.div>
           </section>
 
-          {/* 6. danger zone */}
+          {/* 7. danger zone */}
           {isAdmin && (
             <section id="danger" ref={(el) => { sectionRefs.current.danger = el; }}>
               <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.3, ease: EASE }}>

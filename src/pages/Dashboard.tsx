@@ -12,6 +12,7 @@ import {
 import { FleetMap } from '@/components/FleetMap';
 import type { FleetMapHandle } from '@/components/FleetMap';
 import { Drawer, KPIStatCard, PlateTag, StatusPill, toast } from '@/components/shared';
+import { SourceBadge } from '@/components/SourceBadge';
 import { useCollection, useLiveStore } from '@/lib/store';
 import { sim } from '@/lib/sim';
 import { corridorById } from '@/lib/telematics';
@@ -168,6 +169,7 @@ function FleetRail({ vehicles, drivers, geofences, live, selectedId, onSelect, c
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <PlateTag plate={v.plate} />
+                  <SourceBadge source={p?.source} />
                   <span className="truncate text-[13px] text-ink-600">{drv}</span>
                 </div>
                 <div className="mt-1 truncate text-[11px] leading-4 text-ink-400">
