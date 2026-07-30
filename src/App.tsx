@@ -7,6 +7,13 @@ import Dashboard from '@/pages/Dashboard';
 import Login from '@/pages/Login';
 import NotFound from '@/pages/NotFound';
 import { stub } from '@/pages/stubs';
+import Alerts from '@/pages/admin/Alerts';
+import Reports from '@/pages/admin/Reports';
+import Analytics from '@/pages/admin/Analytics';
+import AdminUsers from '@/pages/admin/AdminUsers';
+import AdminAudit from '@/pages/admin/AdminAudit';
+import BulkUpload from '@/pages/admin/BulkUpload';
+import Settings from '@/pages/admin/Settings';
 import { startSim } from '@/lib/sim';
 
 // Route stubs — replaced by page agents (design.md §11).
@@ -31,13 +38,6 @@ const Dispatch = stub('Dispatch Board');
 const DispatchDetail = stub('Job Detail');
 const DispatchRun = stub('Job Run & POD', 'Driver mobile run view with proof of delivery — page agent implements per dispatch.md.');
 const Assets = stub('Assets & Equipment');
-const Alerts = stub('Alert Center');
-const Reports = stub('Reports');
-const Analytics = stub('Executive Analytics');
-const AdminUsers = stub('Users & Roles');
-const AdminAudit = stub('Audit Trail');
-const BulkUpload = stub('Bulk Upload');
-const Settings = stub('Settings');
 const DriverHome = stub('Driver Home', 'Mobile driver home — today’s jobs, DVIR prompt, shift status.');
 
 export default function App() {
