@@ -4,6 +4,22 @@ import type { InsertUser } from "@db/schema";
 import { getDb } from "./connection";
 import { env } from "../lib/env";
 
+export async function findUserByUsername(username: string) {
+  const rows = await getDb()
+    .select()
+    .from(schema.users)
+    .where(eq(schema.users.username, username))
+    .limit(1);
+  return rows.at(0);
+}
+
+export async function setUserPassword(username: string, passwordHash: string) {
+  await getDb()
+    .update(schema.users)
+    .set({ passwordHash })
+    .where(eq(schema.users.username, username));
+}
+
 export async function findUserByUnionId(unionId: string) {
   const rows = await getDb()
     .select()

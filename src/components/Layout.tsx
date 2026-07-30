@@ -7,6 +7,8 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AppSidebar } from '@/components/AppSidebar';
 import { Topbar } from '@/components/Topbar';
+import { useAuth } from '@/hooks/useAuth';
+import { syncStore } from '@/lib/store';
 import { cn } from '@/lib/utils';
 
 function useMedia(query: string): boolean {
@@ -21,6 +23,7 @@ function useMedia(query: string): boolean {
 }
 
 export default function Layout() {
+  const { user, isLoading } = useAuth({ redirectOnUnauthenticated: true });
   const isNarrow = useMedia('(max-width: 1279px)');   // rail mode
   const isMobile = useMedia('(max-width: 1023px)');   // off-canvas
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -28,6 +31,20 @@ export default function Layout() {
   const isMapDashboard = location.pathname === '/';
 
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
+
+  // Start server sync once authenticated.
+  useEffect(() => { if (user) syncStore(); }, [user]);
+
+  if (isLoading || !user) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-navy-900">
+        <div className="flex flex-col items-center gap-3">
+          <img src="/logo.svg" alt="FleetOS" className="h-12 w-12 animate-pulse" />
+          <div className="text-[13px] text-navy-100">Loading operations console…</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-[100dvh] overflow-hidden bg-surface-muted">

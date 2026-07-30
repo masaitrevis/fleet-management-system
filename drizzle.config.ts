@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { defineConfig } from "drizzle-kit";
+import { dbConnectionOptions } from "./db/connection-options";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -11,6 +12,6 @@ export default defineConfig({
   out: "./db/migrations",
   dialect: "mysql",
   dbCredentials: {
-    url: connectionString,
+    ...dbConnectionOptions(connectionString),
   },
 });

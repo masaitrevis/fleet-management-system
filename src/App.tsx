@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import Layout from '@/components/Layout';
 import DriverShell from '@/components/DriverShell';
 import { ToastStack } from '@/components/shared';
 import Dashboard from '@/pages/Dashboard';
 import Login from '@/pages/Login';
+import NotFound from '@/pages/NotFound';
 import { stub } from '@/pages/stubs';
 import { startSim } from '@/lib/sim';
 
@@ -88,7 +89,7 @@ export default function App() {
           <Route path="dispatch/:id/run" element={<DispatchRun />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
       <ToastStack />
     </BrowserRouter>

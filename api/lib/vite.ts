@@ -6,8 +6,29 @@ import path from "path";
 
 type App = Hono<{ Bindings: HttpBindings }>;
 
+/**
+ * Cache policy for static responses:
+ * - /assets/* (Vite content-hashed bundles) → immutable, 1 year
+ * - everything else (index.html, SPA routes, icons) → no-cache, so browsers
+ *   always revalidate and immediately pick up newly deployed builds
+ * - /api/* → untouched
+ */
+export function cacheControlFor(reqPath: string): string | null {
+  if (reqPath.startsWith("/api/")) return null;
+  if (reqPath.startsWith("/assets/")) {
+    return "public, max-age=31536000, immutable";
+  }
+  return "no-cache";
+}
+
 export function serveStaticFiles(app: App) {
   const distPath = path.resolve(import.meta.dirname, "../dist/public");
+
+  app.use("*", async (c, next) => {
+    await next();
+    const cc = cacheControlFor(c.req.path);
+    if (cc) c.res.headers.set("Cache-Control", cc);
+  });
 
   app.use("*", serveStatic({ root: "./dist/public" }));
 

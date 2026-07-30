@@ -14,7 +14,7 @@
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push"
+    "db:push": "node scripts/patch-drizzle-kit-tidb.mjs && drizzle-kit push"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -114,5 +114,10 @@
     "prettier": "^3.7.4",
     "vitest": "^4.0.16",
     "drizzle-kit": "^0.31.8"
+  },
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": "20.x",
+    "npm": ">=10.9"
   }
 }

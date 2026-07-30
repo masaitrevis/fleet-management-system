@@ -7,6 +7,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Bell, ChevronDown, ChevronRight, LogOut, Menu, Search, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useCollection } from '@/lib/store';
+import { useAuth } from '@/hooks/useAuth';
 import { avatarTint, initials } from '@/lib/format';
 
 export const ROUTE_TITLES: [RegExp, string][] = [
@@ -167,7 +168,11 @@ export function Topbar({ overlay, onMenu }: { overlay?: boolean; onMenu: () => v
   const location = useLocation();
   const alerts = useCollection('alerts');
   const users = useCollection('users');
+  const { user: authUser, logout } = useAuth();
   const me = users[0];
+  const displayName = authUser?.name ?? me?.name ?? 'Fleet User';
+  const displayRole = authUser?.role === 'admin' ? 'Admin' : (me?.role ?? 'User');
+  const displayEmail = authUser?.email ?? me?.email ?? '';
   const [menuOpen, setMenuOpen] = useState(false);
   const unread = alerts.filter((a) => !a.read).length;
   const title = pageTitle(location.pathname);
@@ -216,13 +221,13 @@ export function Topbar({ overlay, onMenu }: { overlay?: boolean; onMenu: () => v
           )}
         </Link>
 
-        {me && (
+        {(me || authUser) && (
           <div className="relative">
             <button type="button" onClick={() => setMenuOpen(!menuOpen)}
               className="flex items-center gap-1.5 rounded-lg p-1 hover:bg-surface-muted/20">
-              <span className={cn('flex h-8 w-8 items-center justify-center rounded-full bg-cover text-[12px] font-bold', avatarTint(me.name))}
+              <span className={cn('flex h-8 w-8 items-center justify-center rounded-full bg-cover text-[12px] font-bold', avatarTint(displayName))}
                 style={{ backgroundImage: 'url(/avatar-texture.svg)' }}>
-                {initials(me.name)}
+                {initials(displayName)}
               </span>
               <ChevronDown size={13} className={overlay ? 'text-navy-100/70' : 'text-ink-400'} />
             </button>
@@ -231,15 +236,15 @@ export function Topbar({ overlay, onMenu }: { overlay?: boolean; onMenu: () => v
                 <div className="fixed inset-0 z-[790]" onClick={() => setMenuOpen(false)} />
                 <div className="absolute right-0 top-11 z-[791] w-52 overflow-hidden rounded-xl border border-border bg-white py-1 shadow-pop">
                   <div className="border-b border-border px-3 py-2">
-                    <div className="text-[13px] font-semibold text-ink-900">{me.name}</div>
-                    <div className="text-[11px] text-ink-400">{me.email}</div>
+                    <div className="text-[13px] font-semibold text-ink-900">{displayName}</div>
+                    <div className="text-[11px] text-ink-400">{displayEmail}</div>
                   </div>
                   <Link to="/admin/users" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-[13px] text-ink-900 hover:bg-surface-muted">
-                    <User size={14} className="text-ink-400" /> Profile · {me.role}
+                    <User size={14} className="text-ink-400" /> Profile · {displayRole}
                   </Link>
-                  <Link to="/login" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-3 py-2 text-[13px] text-alert hover:bg-alert-soft/50">
+                  <button type="button" onClick={() => { setMenuOpen(false); logout(); }} className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] text-alert hover:bg-alert-soft/50">
                     <LogOut size={14} /> Sign out
-                  </Link>
+                  </button>
                 </div>
               </>
             )}

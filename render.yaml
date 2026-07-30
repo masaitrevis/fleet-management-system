@@ -1,0 +1,43 @@
+# Render Blueprint — FBV FleetOS (full-stack fleet management)
+# One Render Web Service runs everything: the Hono/tRPC API AND the built
+# React frontend (dist/) on the same port. The database is an external
+# MySQL-compatible instance (Render has no managed MySQL — use TiDB Cloud
+# Serverless and paste its connection string as DATABASE_URL; TLS is enabled
+# automatically for external hosts).
+
+services:
+  - type: web
+    name: fbv-fleetos
+    runtime: node
+    plan: starter
+    branch: master
+    buildCommand: corepack enable && corepack prepare pnpm@9.15.4 --activate && NODE_ENV=development pnpm install --frozen-lockfile && pnpm run build
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      # ── Secrets: Render prompts for these in the dashboard (sync: false) ──
+      - key: DATABASE_URL      # mysql://user:pass@host:4000/fbv_fleet (own DB, not the tender one!)
+        sync: false
+      - key: APP_ID            # Kimi OAuth app id
+        sync: false
+      - key: APP_SECRET        # Kimi OAuth app secret (JWT signing)
+        sync: false
+      - key: KIMI_AUTH_URL     # Kimi OAuth server URL (backend)
+        sync: false
+      - key: KIMI_OPEN_URL     # Kimi Open Platform URL
+        sync: false
+      - key: VITE_KIMI_AUTH_URL  # same auth URL, baked into the frontend build
+        sync: false
+      - key: VITE_APP_ID         # same app id, baked into the frontend build
+        sync: false
+      - key: OWNER_UNION_ID      # optional: union id that becomes admin
+        sync: false
+      # ── Standalone login (self-hosted) ──
+      # Set BOTH to enable the username/password admin login on /login.
+      # Needed because Kimi OAuth only trusts Kimi-hosted callback domains.
+      - key: ADMIN_USERNAME      # e.g. fbv-admin
+        sync: false
+      - key: ADMIN_PASSWORD      # choose a strong password
+        sync: false

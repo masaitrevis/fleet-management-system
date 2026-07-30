@@ -5,7 +5,9 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { Calendar1, ClipboardCheck, Home, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useLiveStore } from '@/lib/store';
+import { useLiveStore, syncStore } from '@/lib/store';
+import { useAuth } from '@/hooks/useAuth';
+import { useEffect } from 'react';
 import { pageTitle } from '@/components/Topbar';
 
 const TABS = [
@@ -16,6 +18,15 @@ const TABS = [
 ];
 
 export default function DriverShell() {
+  const { user, isLoading } = useAuth({ redirectOnUnauthenticated: true });
+  useEffect(() => { if (user) syncStore(); }, [user]);
+  if (isLoading || !user) {
+    return (
+      <div className="flex min-h-[100dvh] items-center justify-center bg-navy-900">
+        <img src="/logo.svg" alt="FleetOS" className="h-10 w-10 animate-pulse" />
+      </div>
+    );
+  }
   const running = useLiveStore((s) => s.running);
   const location = useLocation();
   return (
