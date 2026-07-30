@@ -22,6 +22,13 @@ import MaintSchedules from '@/pages/fleet/Schedules';
 import MaintParts from '@/pages/fleet/Parts';
 import Vehicles from '@/pages/fleet/Vehicles';
 import VehicleDetail from '@/pages/fleet/VehicleDetail';
+import Alerts from '@/pages/admin/Alerts';
+import Reports from '@/pages/admin/Reports';
+import Analytics from '@/pages/admin/Analytics';
+import AdminUsers from '@/pages/admin/AdminUsers';
+import AdminAudit from '@/pages/admin/AdminAudit';
+import BulkUpload from '@/pages/admin/BulkUpload';
+import Settings from '@/pages/admin/Settings';
 import { startSim } from '@/lib/sim';
 import FuelLogPage from '@/pages/ops/FuelLogPage';
 import FuelAnalyticsPage from '@/pages/ops/FuelAnalyticsPage';
@@ -31,13 +38,6 @@ import JobRunPage from '@/pages/ops/JobRunPage';
 import AssetsPage from '@/pages/ops/AssetsPage';
 
 // Route stubs — replaced by page agents (design.md §11).
-const Alerts = stub('Alert Center');
-const Reports = stub('Reports');
-const Analytics = stub('Executive Analytics');
-const AdminUsers = stub('Users & Roles');
-const AdminAudit = stub('Audit Trail');
-const BulkUpload = stub('Bulk Upload');
-const Settings = stub('Settings');
 const DriverHome = stub('Driver Home', 'Mobile driver home — today’s jobs, DVIR prompt, shift status.');
 
 export default function App() {
