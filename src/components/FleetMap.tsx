@@ -242,8 +242,10 @@ export const FleetMap = forwardRef<FleetMapHandle, FleetMapProps>(function Fleet
           <Trail key={id} points={pts} />
         ))}
         {children}
+        {/* DOM-overlay markers must live INSIDE MapContainer: MarkerLayer
+            calls useMap(), which throws without the Leaflet context. */}
+        <MarkerLayer positions={positions} plates={plates} selectedId={selectedId} onVehicleClick={onVehicleClick} />
       </MapContainer>
-      <MarkerLayer positions={positions} plates={plates} selectedId={selectedId} onVehicleClick={onVehicleClick} />
       {showControls && (
         <div className="absolute bottom-4 right-4 z-[700]">
           <MapControls
