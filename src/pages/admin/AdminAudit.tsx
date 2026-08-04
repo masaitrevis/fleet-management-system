@@ -1,4 +1,4 @@
-// /admin/audit — Audit Trail (design/admin-audit.md)
+// /admin/audit — Audit Trail (CRASH-FIXED)
 
 import { useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -20,7 +20,7 @@ import {
 
 /* ---------------- action metadata ---------------- */
 
-const ACTION_META: Record<AuditEntry['action'], { label: string; icon: LucideIcon; tile: string }> = {
+const ACTION_META: Record<string, { label: string; icon: LucideIcon; tile: string }> = {
   create: { label: 'CREATE', icon: FilePlus2, tile: 'bg-ok-soft text-ok-on-soft' },
   update: { label: 'UPDATE', icon: Pencil, tile: 'bg-accent-soft text-accent-strong' },
   delete: { label: 'DELETE', icon: Trash2, tile: 'bg-alert-soft text-alert-on-soft' },
@@ -28,6 +28,9 @@ const ACTION_META: Record<AuditEntry['action'], { label: string; icon: LucideIco
   export: { label: 'EXPORT', icon: Download, tile: 'bg-info-soft text-info-on-soft' },
   import: { label: 'IMPORT / RESTORE', icon: RotateCcw, tile: 'bg-navy-900 text-white' },
 };
+
+// FALLBACK for any unknown action (e.g., 'wipe', 'clear', 'reset')
+const FALLBACK_ACTION = { label: 'SYSTEM', icon: ShieldCheck, tile: 'bg-inactive-soft text-inactive-on-soft' };
 
 const ALL_ACTIONS = Object.keys(ACTION_META) as AuditEntry['action'][];
 const MODULES = ['vehicles', 'drivers', 'jobs', 'workOrders', 'fuelLogs', 'documents', 'settings', 'users', 'reports', 'alerts', 'geofences', 'trips'];
@@ -40,7 +43,8 @@ function sourceChip(e: AuditEntry): string {
 
 function sessionId(e: AuditEntry): string {
   let h = 0;
-  for (const ch of e.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const id = e.id ?? 'unknown';
+  for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   return `ses-${h.toString(16).padStart(8, '0')}`;
 }
 
@@ -49,8 +53,13 @@ function sessionId(e: AuditEntry): string {
 const PAGE = 50;
 
 export default function AdminAuditPage() {
-  const entries = useCollection('audit');
-  const users = useCollection('users');
+  // CRASH FIX #1: default to [] if collection is undefined/null during re-seed
+  const rawEntries = useCollection('audit');
+  const entries: AuditEntry[] = Array.isArray(rawEntries) ? rawEntries : [];
+
+  const rawUsers = useCollection('users');
+  const users = Array.isArray(rawUsers) ? rawUsers : [];
+
   const [userFilter, setUserFilter] = useState('');
   const [actions, setActions] = useState<Set<AuditEntry['action']>>(new Set());
   const [modules, setModules] = useState<Set<string>>(new Set());
@@ -61,7 +70,7 @@ export default function AdminAuditPage() {
   const [shown, setShown] = useState(PAGE);
 
   const sorted = useMemo(
-    () => [...entries].sort((a, b) => b.at.localeCompare(a.at)),
+    () => [...entries].sort((a, b) => (b.at ?? '').localeCompare(a.at ?? '')),
     [entries],
   );
 
@@ -69,16 +78,17 @@ export default function AdminAuditPage() {
     if (userFilter && e.userId !== userFilter) return false;
     if (actions.size && !actions.has(e.action)) return false;
     if (modules.size && !modules.has(e.collection)) return false;
-    if (range !== 9999 && e.at.slice(0, 10) < demoDateDaysAgo(range)) return false;
+    if (range !== 9999 && (e.at ?? '').slice(0, 10) < demoDateDaysAgo(range)) return false;
     if (search) {
       const q = search.toLowerCase();
-      if (!`${e.userName} ${e.recordId} ${e.summary} ${e.collection}`.toLowerCase().includes(q)) return false;
+      const haystack = `${e.userName ?? ''} ${e.recordId ?? ''} ${e.summary ?? ''} ${e.collection ?? ''}`.toLowerCase();
+      if (!haystack.includes(q)) return false;
     }
     return true;
   }), [sorted, userFilter, actions, modules, range, search]);
 
-  const todayCount = entries.filter((e) => e.at.slice(0, 10) === TODAY).length;
-  const weekCount = entries.filter((e) => e.at.slice(0, 10) >= demoDateDaysAgo(7)).length;
+  const todayCount = entries.filter((e) => (e.at ?? '').slice(0, 10) === TODAY).length;
+  const weekCount = entries.filter((e) => (e.at ?? '').slice(0, 10) >= demoDateDaysAgo(7)).length;
 
   const toggle = <T,>(set: Set<T>, v: T, apply: (s: Set<T>) => void) => {
     const next = new Set(set);
@@ -87,15 +97,18 @@ export default function AdminAuditPage() {
   };
 
   const doExport = () => {
-    const rows = filtered.map((e) => ({
-      'Timestamp (EAT)': fmtDateTimeEAT(e.at, true),
-      Actor: e.userName,
-      Action: ACTION_META[e.action].label,
-      Module: collectionLabel(e.collection),
-      Entity: e.recordId,
-      Summary: e.summary,
-      Source: sourceChip(e),
-    }));
+    const rows = filtered.map((e) => {
+      const meta = ACTION_META[e.action] ?? FALLBACK_ACTION;
+      return {
+        'Timestamp (EAT)': fmtDateTimeEAT(e.at, true),
+        Actor: e.userName ?? 'Unknown',
+        Action: meta.label,
+        Module: collectionLabel(e.collection),
+        Entity: e.recordId ?? '—',
+        Summary: e.summary ?? '—',
+        Source: sourceChip(e),
+      };
+    });
     const n = exportXlsx(`audit-trail-${range === 9999 ? 'all' : `${range}d`}-${TODAY}.xlsx`, [{ name: 'Audit trail', rows }]);
     logAudit('export', 'audit', 'export', `Exported audit trail (${n} rows, ${range === 9999 ? 'all time' : `${range}d`})`);
     toast({ title: 'Audit trail exported', body: `${n} rows · export logged as a new entry`, status: 'ok' });
@@ -124,7 +137,7 @@ export default function AdminAuditPage() {
           <Btn variant="navy" onClick={doExport}><Download size={15} /> Export</Btn>
         </div>
       </div>
-      <div className="font-mono text-micro text-ink-400">Today {fmtNum(todayCount)} entries · This week {fmtNum(weekCount)}</div>
+      <div className="font-mono text-micro text-ink-400">Today {fmtNum(todayCount)} entries · This week {fmtNum(weekCount)} entries</div>
 
       <div className="flex gap-4">
         {/* filter rail */}
@@ -200,30 +213,31 @@ export default function AdminAuditPage() {
           )}
 
           {visible.map((e, i) => {
-            const M = ACTION_META[e.action];
+            // CRASH FIX #2: fallback for unknown actions (e.g., 'wipe', 'clear')
+            const M = ACTION_META[e.action] ?? FALLBACK_ACTION;
             const isOpen = expanded === e.id;
             const related = entries.filter((x) => x.recordId === e.recordId && x.id !== e.id).length;
             return (
               <motion.div
-                key={e.id}
+                key={e.id ?? `fallback-${i}`}
                 initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.2, delay: Math.min(i * 0.02, 0.5), ease: EASE }}
-                className={cn('overflow-hidden rounded-card border border-border bg-white shadow-card', e.id.startsWith('aud-') && i === 0 && 'animate-alert-flash')}
+                className={cn('overflow-hidden rounded-card border border-border bg-white shadow-card', (e.id ?? '').startsWith('aud-') && i === 0 && 'animate-alert-flash')}
               >
                 <button type="button" onClick={() => setExpanded(isOpen ? null : e.id)}
                   className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-surface-muted">
                   <span className={cn('flex h-9 w-9 shrink-0 items-center justify-center rounded-lg', M.tile)}>
-                    {e.summary.toLowerCase().includes('failed') ? <Lock size={15} /> : <M.icon size={15} />}
+                    {(e.summary ?? '').toLowerCase().includes('failed') ? <Lock size={15} /> : <M.icon size={15} />}
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[13.5px] font-medium leading-5 text-ink-900">
-                      <span className="text-accent-strong">{e.userName}</span> {e.summary}
+                      <span className="text-accent-strong">{e.userName ?? 'Unknown'}</span> {e.summary ?? '—'}
                     </span>
                     <span className="mt-0.5 flex flex-wrap items-center gap-1.5">
                       <Chip tone="inactive">{collectionLabel(e.collection)}</Chip>
-                      <button type="button" onClick={(ev) => { ev.stopPropagation(); copyId(e.recordId); }}
+                      <button type="button" onClick={(ev) => { ev.stopPropagation(); copyId(e.recordId ?? 'unknown'); }}
                         className="group inline-flex items-center gap-1 rounded-full bg-navy-50 px-2 py-0.5 font-mono text-micro font-medium text-navy-800 transition-transform hover:-translate-y-px">
-                        {e.recordId} <Copy size={9} className="opacity-0 group-hover:opacity-100" />
+                        {e.recordId ?? '—'} <Copy size={9} className="opacity-0 group-hover:opacity-100" />
                       </button>
                       <span className="font-mono text-micro text-ink-400">196.201.xx.xx</span>
                       <Chip tone={sourceChip(e) === 'WEB' ? 'info' : sourceChip(e) === 'MOBILE' ? 'ok' : 'inactive'}>{sourceChip(e)}</Chip>
@@ -257,9 +271,9 @@ export default function AdminAuditPage() {
                           <span>FleetOS-Web/2.4.1 (demo UA)</span>
                           {related > 0 && (
                             <button type="button"
-                              onClick={() => { setSearch(e.recordId); setSearchInput(e.recordId); }}
+                              onClick={() => { setSearch(e.recordId ?? ''); setSearchInput(e.recordId ?? ''); }}
                               className="text-accent-strong hover:underline">
-                              {related} more on {e.recordId} →
+                              {related} more on {e.recordId ?? '—'} →
                             </button>
                           )}
                         </div>
@@ -305,7 +319,7 @@ function CreateBlob({ entry }: { entry: AuditEntry }) {
         <motion.pre
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}
           className="max-h-[200px] overflow-auto border-t border-border bg-navy-900 p-3 font-mono text-[12px] leading-5 text-navy-50">
-          {rec ? JSON.stringify(rec, null, 2) : `Record ${entry.recordId} no longer present (deleted or replaced).`}
+          {rec ? JSON.stringify(rec, null, 2) : `Record ${entry.recordId ?? 'unknown'} no longer present (deleted or replaced).`}
         </motion.pre>
       )}
     </div>
