@@ -204,13 +204,6 @@ export function Topbar({ overlay, onMenu }: { overlay?: boolean; onMenu: () => v
       </div>
 
       <div className="ml-auto flex items-center gap-2 sm:gap-3">
-        <span className={cn(
-          'hidden rounded-full border px-2.5 py-1 text-micro font-medium lg:inline-block',
-          overlay ? 'border-navy-700 bg-navy-800/60 text-navy-100' : 'border-border bg-surface-muted text-ink-600',
-        )}>
-          Demo data · Nairobi
-        </span>
-
         <Link to="/alerts" className={cn('relative flex h-9 w-9 items-center justify-center rounded-lg',
           overlay ? 'text-navy-100 hover:bg-navy-800' : 'text-ink-600 hover:bg-surface-muted')}>
           <Bell size={17} />
